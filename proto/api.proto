@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package grpcdict;
+
+
+message NoParams {
+}
+
+
+message GetParams {
+    string key = 1;
+}
+
+message GetResponse {
+    bool found   = 1;
+    string value = 2;
+}
+
+
+message SetParams {
+    string key  = 1;
+    string value = 2;
+}
+
+message SetResponse {
+    string error = 2;
+}
+
+
+message StatsResponse {
+    int64 nTotalGet      = 1;
+    int64 nTotalSet      = 2;
+    int64 nSuccessfulGet = 3;
+    int64 nFailedGet     = 4;
+}
+
+
+service RemoteDictionary {
+    rpc Get(GetParams) returns (GetResponse) {}
+    rpc Set(SetParams) returns (SetResponse) {}
+    rpc Stats(NoParams) returns (StatsResponse) {}
+}
