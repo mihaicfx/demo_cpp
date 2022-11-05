@@ -54,3 +54,20 @@ set(CLIENT_SOURCES
 )
 add_executable(client ${CLIENT_SOURCES})
 target_link_libraries(client PRIVATE clientlib spdlog::spdlog)
+
+# Testing
+enable_testing()
+
+# TODO: don't recompile sources, but compile dict in a lib
+set(UUT_SOURCES src/server/dictionary.cpp)
+add_executable(unit_tests ${UUT_SOURCES} tests/unit/dictionary_test.cpp)
+# TODO: when the above is done, this is not needed:
+target_include_directories(unit_tests PRIVATE src/server/extern)
+target_link_libraries(unit_tests robin_hood::robin_hood spdlog::spdlog)
+
+find_package(GTest REQUIRED)
+target_link_libraries(unit_tests GTest::gtest_main)
+target_include_directories(unit_tests PRIVATE src/server)
+
+include(GoogleTest)
+gtest_discover_tests(unit_tests)

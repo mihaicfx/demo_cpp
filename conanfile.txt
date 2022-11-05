@@ -3,6 +3,7 @@
     grpc/1.50.0
     robin-hood-hashing/3.11.5
     spdlog/1.11.0
+    gtest/1.12.1
 
 [generators]
     cmake_find_package
