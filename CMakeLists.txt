@@ -32,8 +32,11 @@ set(SERVER_SOURCES
 add_executable(server ${SERVER_SOURCES})
 target_link_libraries(server PRIVATE protolib)
 
+target_include_directories(server PRIVATE src/server/extern)
+
 find_package(robin_hood REQUIRED)
-target_link_libraries(server PRIVATE robin_hood::robin_hood)
+find_package(spdlog REQUIRED)
+target_link_libraries(server PRIVATE robin_hood::robin_hood spdlog::spdlog)
 
 # Build client lib
 set(CLIENT_LIB_SOURCES 
@@ -50,4 +53,4 @@ set(CLIENT_SOURCES
     src/client/main.cpp
 )
 add_executable(client ${CLIENT_SOURCES})
-target_link_libraries(client PRIVATE clientlib)
+target_link_libraries(client PRIVATE clientlib spdlog::spdlog)

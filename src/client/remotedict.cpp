@@ -1,7 +1,5 @@
 #include <remotedict.h>
 
-#include <iostream>
-
 #include <proto/api.pb.h>
 #include <proto/api.grpc.pb.h>
 
@@ -28,8 +26,7 @@ RemoteDictionary::RemoteDictionary(const std::string& remoteAddress)
     pImpl = std::make_unique<RemoteDictionaryImpl>(std::move(channel), std::move(stub));
 }
 
-RemoteDictionary::~RemoteDictionary()
-{}
+RemoteDictionary::~RemoteDictionary() = default;
 
 std::chrono::system_clock::time_point getDeadline(int seconds)
 {
@@ -38,7 +35,7 @@ std::chrono::system_clock::time_point getDeadline(int seconds)
 
 
 
-std::optional<std::string> RemoteDictionary::remoteGet(const std::string& key)
+std::pair<bool, std::string> RemoteDictionary::remoteGet(const std::string& key)
 {
     grpcdict::GetParams params;
     grpcdict::GetResponse result;
@@ -51,22 +48,15 @@ std::optional<std::string> RemoteDictionary::remoteGet(const std::string& key)
 
     if (status.ok())
     {
-        if (result.found())
-        {
-            return result.value();
-        }
-        else
-        {
-            // sadly cannot use std::expected here
-            std::cout << "Get failed: " << result.value() << std::endl;
-        }
+        // sadly cannot use std::expected yet (C++23)
+        return { result.found(), result.value() };
     }
-    return {};
+    return { false, status.error_message() };
 }
 
 
 
-bool RemoteDictionary::remoteSet(const std::string& key, const std::string& value)
+std::pair<bool, std::string> RemoteDictionary::remoteSet(const std::string& key, const std::string& value)
 {
     grpcdict::SetParams params;
     grpcdict::SetResponse result;
@@ -80,17 +70,10 @@ bool RemoteDictionary::remoteSet(const std::string& key, const std::string& valu
 
     if (status.ok())
     {
-        if (result.error().empty())
-        {
-            return true;
-        }
-        else
-        {
-            // sadly cannot use std::expected here
-            std::cout << "Set failed: " << result.error() << std::endl;
-        }
+        // sadly cannot use std::expected yet (C++23)
+        return { result.error().empty(), result.error() };
     }
-    return false;
+    return { false, status.error_message() };
 }
 
 

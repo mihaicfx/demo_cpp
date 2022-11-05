@@ -1,16 +1,13 @@
 # demo_cpp
-Cpp project demonstrating misc technologies
-#
-Ran on Ubuntu 22.04
+Simple client-server gRPC in C++ demonstrating CMake, Conan, Protobuf, gRPC, robin_hood::unordered_map, spdlog, bloom_filter
 
-# Prerequisites
-GCC 11.3
+Tested on Ubuntu 22.04
 
-Python 3.6
-
-CMake 3.5
-
-Conan 1.53
-- run `pip install conan`
-- run `conan profile new default --detect`
-- run `conan profile update settings.compiler.libcxx=libstdc++11 default`
+## Prerequisites
+- GCC 11.3
+- Python 3.6
+- CMake 3.5
+- Conan 1.53
+    - run `pip install conan`
+    - run `conan profile new default --detect`
+    - run `conan profile update settings.compiler.libcxx=libstdc++11 default`

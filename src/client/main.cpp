@@ -1,6 +1,9 @@
 #include <iostream>
 #include <optional>
 #include <map>
+#include <getopt.h>
+
+#include <spdlog/spdlog.h>
 
 #include <remotedict.h>
 
@@ -13,33 +16,38 @@ enum class Choice
     EXIT
 };
 
+/**
+ * @brief Turn a command string into enum
+ * @param cmd command string
+ */
 Choice parseCommand(const std::string& cmd)
 {
     static const std::map<std::string, Choice> cmdMap = {
         {"get", Choice::GET}, 
         {"set", Choice::SET}, 
-        {"stats", Choice::STATS}
+        {"stats", Choice::STATS},
+        {"exit", Choice::EXIT}
     };
     if (const auto it = cmdMap.find(cmd); it != cmdMap.end())
     {
         return it->second;
     }
-    std::cout << "Unknown command " << cmd;
+    spdlog::error("Unknown command: {}", cmd);
     return Choice::EXIT;
 }
 
 
-int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[])
+
+int consoleQueryLoop(RemoteDictionary& remoteDict)
 {
-    std::cout << "Supported commands:" << std::endl;
-    std::cout << " get KEY" << std::endl;
-    std::cout << " set KEY VALUE" << std::endl;
-    std::cout << " stats" << std::endl;
+    spdlog::info("Supported commands:");
+    spdlog::info(" get KEY");
+    spdlog::info(" set KEY VALUE");
+    spdlog::info(" stats");
 
     Choice choice = Choice::EXIT;
     std::string cmd;
     std::string key, value;
-    RemoteDictionary remoteDict{"localhost:50051"};
     do {
         std::cout << "> ";
         std::cin >> cmd;
@@ -49,31 +57,69 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[])
             case Choice::GET: 
             {
                 std::cin >> key;
-                const auto value = remoteDict.remoteGet(key);
-                std::cout << (value? "Got back " + *value: "Key not found");
+                const auto [success, value] = remoteDict.remoteGet(key);
+                spdlog::info((success? "Got back '{}'": "Could not get: {}"), value);
                 break;
             }
             case Choice::SET:
             {
                 std::cin >> key >> value;
-                auto success = remoteDict.remoteSet(key, value);
-                std::cout << (success? "Succesfully set ": "Could not set ") << key << " to " << value;
+                const auto [success, errorMsg] = remoteDict.remoteSet(key, value);
+                spdlog::info((success? "Succesfully set '{}' to '{}'": "Could not set '{}' to '{}'"), key, value);
+                if (!success)
+                {
+                    spdlog::info("Because: {}", errorMsg);
+                }
                 break;
             }
             case Choice::STATS:
             {
                 const auto stats = remoteDict.remoteStats();
-                std::cout << "Stats:" << std::endl;
-                std::cout << "  nTotalGet = " << stats.nTotalGet << std::endl;
-                std::cout << "  nTotalSet = " << stats.nTotalSet << std::endl;
-                std::cout << "  nSuccessfulGet = " << stats.nSuccessfulGet << std::endl;
-                std::cout << "  nFailedGet = " << stats.nFailedGet << std::endl;
+                spdlog::info("Stats:");
+                spdlog::info("  nTotalGet = {}", stats.nTotalGet);
+                spdlog::info("  nTotalSet = {}", stats.nTotalSet);
+                spdlog::info("  nSuccessfulGet = {}", stats.nSuccessfulGet);
+                spdlog::info("  nFailedGet = {}", stats.nFailedGet);
                 break;
             }
-            default:
+            case Choice::EXIT:
                 break;
+            default:
+                return 1;
         }
-        std::cout << std::endl;
     } while (choice != Choice::EXIT);
     return 0;
+}
+
+
+
+int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[])
+{
+    spdlog::set_level(spdlog::level::info);
+
+    static struct option long_options[] =
+    {
+        {"addr", required_argument, NULL, 'a'},
+        {"silent", no_argument, NULL, 's'},
+        {NULL, 0, NULL, 0}
+    };
+
+    std::string address = "localhost:50051";
+    char ch;
+    while ((ch = getopt_long(argc, argv, "b", long_options, NULL)) != -1)
+    {
+        switch (ch)
+        {
+            case 'a':
+                address = optarg;
+                break;
+            case 's':
+                spdlog::set_level(spdlog::level::err);
+                break;
+            default:
+                return 1;
+        }
+    }
+    RemoteDictionary remoteDict{address};
+    return consoleQueryLoop(remoteDict);
 }

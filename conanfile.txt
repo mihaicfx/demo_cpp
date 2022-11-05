@@ -2,6 +2,7 @@
     protobuf/3.21.4
     grpc/1.50.0
     robin-hood-hashing/3.11.5
+    spdlog/1.11.0
 
 [generators]
     cmake_find_package
