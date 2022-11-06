@@ -5,13 +5,15 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# Enable most warnings
 add_compile_options(-Wall -Wextra -Wpedantic)
 
-
+# Custom utility functions
 include(cmake/conan_config.cmake)
 include(cmake/grpc_generate.cmake)
 
-# Create directory for generated .proto files
+
+## Generate code based on .proto files
 set(GRPC_PROTO_GENS_DIR ${CMAKE_BINARY_DIR}/grpc_generated)
 file(MAKE_DIRECTORY ${GRPC_PROTO_GENS_DIR})
 set(PROTO_FILE "proto/api.proto")
@@ -23,22 +25,28 @@ add_library(protolib ${GRPC_GENERATED_SOURCES})
 target_link_libraries(protolib PUBLIC gRPC::grpc++)
 target_include_directories(protolib PUBLIC ${GRPC_PROTO_GENS_DIR})
 
-# Build server app
-set(SERVER_SOURCES 
-    src/server/main.cpp
+
+## Build server lib (needed for tests and benchmarks)
+set(SERVER_LIB_SOURCES 
     src/server/dictionary.cpp
     src/server/dictionary.h
 )
-add_executable(server ${SERVER_SOURCES})
-target_link_libraries(server PRIVATE protolib)
-
-target_include_directories(server PRIVATE src/server/extern)
+add_library(serverlib STATIC ${SERVER_LIB_SOURCES})
 
 find_package(robin_hood REQUIRED)
 find_package(spdlog REQUIRED)
-target_link_libraries(server PRIVATE robin_hood::robin_hood spdlog::spdlog)
+target_link_libraries(serverlib PUBLIC robin_hood::robin_hood spdlog::spdlog)
+target_include_directories(serverlib PRIVATE src/server/extern)
 
-# Build client lib
+# Build server app
+set(SERVER_SOURCES 
+    src/server/main.cpp
+)
+add_executable(server ${SERVER_SOURCES})
+target_link_libraries(server PRIVATE serverlib protolib)
+
+
+## Build client lib
 set(CLIENT_LIB_SOURCES 
     src/client/remotedict.cpp
     src/client/include/remotedict.h
@@ -55,19 +63,24 @@ set(CLIENT_SOURCES
 add_executable(client ${CLIENT_SOURCES})
 target_link_libraries(client PRIVATE clientlib spdlog::spdlog)
 
-# Testing
+
+## Testing
 enable_testing()
 
-# TODO: don't recompile sources, but compile dict in a lib
-set(UUT_SOURCES src/server/dictionary.cpp)
-add_executable(unit_tests ${UUT_SOURCES} tests/unit/dictionary_test.cpp)
-# TODO: when the above is done, this is not needed:
-target_include_directories(unit_tests PRIVATE src/server/extern)
-target_link_libraries(unit_tests robin_hood::robin_hood spdlog::spdlog)
+add_executable(unit_tests tests/unit/dictionary_test.cpp)
 
 find_package(GTest REQUIRED)
-target_link_libraries(unit_tests GTest::gtest_main)
+target_link_libraries(unit_tests PRIVATE serverlib GTest::gtest_main)
 target_include_directories(unit_tests PRIVATE src/server)
 
+# Integrate with CMake
 include(GoogleTest)
 gtest_discover_tests(unit_tests)
+
+
+## Benchmarking
+find_package(benchmark REQUIRED)
+
+add_executable(benchmarks tests/benchmark/dictionary_benchmark.cpp)
+target_link_libraries(benchmarks PRIVATE serverlib benchmark::benchmark)
+target_include_directories(benchmarks PRIVATE src/server)
