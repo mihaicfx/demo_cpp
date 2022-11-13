@@ -75,29 +75,3 @@ std::pair<bool, std::string> RemoteDictionary::remoteSet(const std::string& key,
     }
     return { false, status.error_message() };
 }
-
-
-
-RemoteDictionary::Stats RemoteDictionary::remoteStats()
-{
-    grpcdict::StatsResponse result;
-
-    grpc::ClientContext context;
-    context.set_deadline(getDeadline(1));
-
-    const grpc::Status status = pImpl->stub->Stats(&context, {}, &result);
-
-    if (status.ok())
-    {
-        return Stats{
-            result.ntotalget(),
-            result.ntotalset(),
-            result.nsuccessfulget(),
-            result.nfailedget()
-        };
-    }
-    return {};
-}
-
-
-

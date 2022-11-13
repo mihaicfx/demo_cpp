@@ -41,18 +41,15 @@ Dictionary::~Dictionary() = default;
 std::optional<std::string> Dictionary::get(const std::string& key)
 {
     std::shared_lock<std::shared_mutex> lock{mutex};
-    mStats.nTotalGet++;
 
     if (!pBloomFilter || pBloomFilter->contains(key))
     {
         auto it = mDict.find(key);
         if (it != mDict.end())
         {   
-            mStats.nSuccessfulGet++;
             return it->second;
         }
     }
-    mStats.nFailedGet++;
     return {};
 }
 
@@ -68,13 +65,4 @@ void Dictionary::set(const std::string& key, const std::string& value)
     }
 
     mDict[key] = value;
-    mStats.nTotalSet++;
-}
-
-
-
-Dictionary::Stats Dictionary::stats()
-{
-    std::shared_lock<std::shared_mutex> lock{mutex};
-    return mStats;
 }

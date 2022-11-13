@@ -42,20 +42,6 @@ public:
         return grpc::Status::OK;
     }
 
-
-    virtual grpc::Status Stats([[maybe_unused]] grpc::ServerContext* context, [[maybe_unused]] const grpcdict::NoParams* request, grpcdict::StatsResponse* response)
-    {
-        auto stats = mDict->stats();
-        spdlog::info("Stats: get = {} / set = {}", stats.nTotalGet, stats.nTotalSet);
-
-        response->set_ntotalget(stats.nTotalGet);
-        response->set_ntotalset(stats.nTotalSet);
-        response->set_nsuccessfulget(stats.nSuccessfulGet); 
-        response->set_nfailedget(stats.nFailedGet);
-
-        return grpc::Status::OK;
-    }
-
 private:
     std::shared_ptr<Dictionary> mDict;
 };

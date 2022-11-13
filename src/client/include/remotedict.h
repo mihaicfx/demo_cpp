@@ -8,14 +8,6 @@
 class RemoteDictionary
 {
 public:
-    struct Stats
-    {
-        int64_t nTotalGet = 0;
-        int64_t nTotalSet = 0;
-        int64_t nSuccessfulGet = 0;
-        int64_t nFailedGet = 0;
-    };
-
     RemoteDictionary(const std::string& remoteAddress);
     ~RemoteDictionary();
 
@@ -33,11 +25,6 @@ public:
      * @return pair of success boolean, and error message in case of failure
      */
     std::pair<bool, std::string> remoteSet(const std::string& key, const std::string& value);
-
-    /**
-     * @brief Remote get stats procedure
-     */
-    Stats remoteStats();
 
 private:
 

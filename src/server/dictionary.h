@@ -13,14 +13,6 @@
 class Dictionary
 {
 public:
-    struct Stats
-    {
-        int64_t nTotalGet = 0;
-        int64_t nTotalSet = 0;
-        int64_t nSuccessfulGet = 0;
-        int64_t nFailedGet = 0;
-    };
-
     Dictionary(bool useBloomFilter);
     ~Dictionary();
 
@@ -37,17 +29,10 @@ public:
      */
     void set(const std::string& key, const std::string& value);
 
-    /**
-     * @brief Atomically return stats
-     */
-    Stats stats();
-
 private:
 
     std::shared_mutex mutex;
     robin_hood::unordered_map<std::string, std::string> mDict;
-
-    Stats mStats;
 
     std::unique_ptr<struct bloom_filter> pBloomFilter;
 };

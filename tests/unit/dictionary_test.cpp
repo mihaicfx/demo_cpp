@@ -43,19 +43,3 @@ TEST(Dictionary, get_withBloomFilter_succeeds)
     EXPECT_TRUE(dict.get("def"));
     EXPECT_FALSE(dict.get("ghi"));
 }
-
-TEST(Dictionary, stats_returnsExpectedValues)
-{
-    Dictionary dict{true};
-
-    dict.set("abc", "123");
-    dict.set("def", "456");
-    dict.get("abc");
-    dict.get("ghi");
-
-    const auto stats = dict.stats();
-    EXPECT_EQ(stats.nTotalGet, 2);
-    EXPECT_EQ(stats.nTotalSet, 2);
-    EXPECT_EQ(stats.nSuccessfulGet, 1);
-    EXPECT_EQ(stats.nFailedGet, 1);
-}

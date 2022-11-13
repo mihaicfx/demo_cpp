@@ -27,16 +27,7 @@ message SetResponse {
 }
 
 
-message StatsResponse {
-    int64 nTotalGet      = 1;
-    int64 nTotalSet      = 2;
-    int64 nSuccessfulGet = 3;
-    int64 nFailedGet     = 4;
-}
-
-
 service RemoteDictionary {
     rpc Get(GetParams) returns (GetResponse) {}
     rpc Set(SetParams) returns (SetResponse) {}
-    rpc Stats(NoParams) returns (StatsResponse) {}
 }

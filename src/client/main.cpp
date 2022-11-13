@@ -12,7 +12,6 @@ enum class Choice
 {
     GET,
     SET,
-    STATS,
     EXIT
 };
 
@@ -25,7 +24,6 @@ Choice parseCommand(const std::string& cmd)
     static const std::map<std::string, Choice> cmdMap = {
         {"get", Choice::GET}, 
         {"set", Choice::SET}, 
-        {"stats", Choice::STATS},
         {"exit", Choice::EXIT}
     };
     if (const auto it = cmdMap.find(cmd); it != cmdMap.end())
@@ -43,7 +41,6 @@ int consoleQueryLoop(RemoteDictionary& remoteDict)
     spdlog::info("Supported commands:");
     spdlog::info(" get KEY");
     spdlog::info(" set KEY VALUE");
-    spdlog::info(" stats");
 
     Choice choice = Choice::EXIT;
     std::string cmd;
@@ -70,16 +67,6 @@ int consoleQueryLoop(RemoteDictionary& remoteDict)
                 {
                     spdlog::info("Because: {}", errorMsg);
                 }
-                break;
-            }
-            case Choice::STATS:
-            {
-                const auto stats = remoteDict.remoteStats();
-                spdlog::info("Stats:");
-                spdlog::info("  nTotalGet = {}", stats.nTotalGet);
-                spdlog::info("  nTotalSet = {}", stats.nTotalSet);
-                spdlog::info("  nSuccessfulGet = {}", stats.nSuccessfulGet);
-                spdlog::info("  nFailedGet = {}", stats.nFailedGet);
                 break;
             }
             case Choice::EXIT:
