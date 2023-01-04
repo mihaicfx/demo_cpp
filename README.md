@@ -1,4 +1,4 @@
-# demo_cpp
+# C++ demo project
 Simple client-server gRPC in C++ demonstrating CMake, Conan, Protobuf, gRPC, robin_hood::unordered_map, spdlog, bloom_filter
 
 Tested on Ubuntu 22.04
